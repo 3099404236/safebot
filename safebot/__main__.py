@@ -133,11 +133,11 @@ def cmd_run(settings: Settings, assume_yes: bool) -> int:
     runtime = create_runtime(settings)
     windows = discover_target_windows(runtime)
     if not windows:
-        print("未发现可监控窗口。先打开 QQ 群聊独立窗口，再运行 list-windows/dump-tree 调试。")
-        return 1
-    print("将监控以下窗口：")
-    for index, window in enumerate(windows, start=1):
-        print(f"{index}. {window.title} ({window.class_name})")
+        print("当前未发现可监控聊天窗口；程序会继续运行，并在后续轮询中自动发现新打开的 QQ 聊天窗口。")
+    else:
+        print("当前将监控以下窗口，后续新打开的 QQ 聊天窗口也会自动加入：")
+        for index, window in enumerate(windows, start=1):
+            print(f"{index}. {window.title} ({window.class_name})")
     if not assume_yes:
         answer = input("确认开始监控？输入 yes 继续：").strip().lower()
         if answer != "yes":

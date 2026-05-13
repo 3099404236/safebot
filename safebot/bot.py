@@ -73,21 +73,39 @@ def discover_target_windows(runtime: BotRuntime) -> list[QQWindow]:
         title_keywords=settings.window_title_keywords,
         class_keywords=settings.window_class_keywords,
     )
+    windows = [window for window in windows if _is_monitorable_chat_window(window)]
     if settings.monitored_window_titles:
         titles = [item.lower() for item in settings.monitored_window_titles]
         windows = [window for window in windows if any(title in window.title.lower() for title in titles)]
     return windows
 
 
-def run_forever(runtime: BotRuntime, windows: list[QQWindow]) -> None:
-    LOG.info("Monitoring %d QQ windows; dry_run=%s", len(windows), runtime.settings.bot.dry_run)
+def run_forever(runtime: BotRuntime, windows: list[QQWindow] | None = None) -> None:
+    known_window_ids = {window.window_id for window in (windows or [])}
+    LOG.info("Monitoring QQ windows dynamically; dry_run=%s", runtime.settings.bot.dry_run)
     while True:
+        windows = discover_target_windows(runtime)
+        current_window_ids = {window.window_id for window in windows}
+        for window in windows:
+            if window.window_id not in known_window_ids:
+                LOG.info("Discovered QQ chat window: title=%s hwnd=%s", window.title, window.hwnd)
+        for removed_id in known_window_ids - current_window_ids:
+            LOG.info("QQ chat window no longer monitored: id=%s", removed_id)
+        known_window_ids = current_window_ids
+
         for window in windows:
             try:
                 _process_window(runtime, window)
             except Exception:
                 LOG.exception("Failed to process window %s", window.title)
         time.sleep(runtime.settings.bot.poll_interval_seconds)
+
+
+def _is_monitorable_chat_window(window: QQWindow) -> bool:
+    title = (window.title or "").strip()
+    if not title:
+        return False
+    return title.casefold() != "qq"
 
 
 def _process_window(runtime: BotRuntime, window: QQWindow) -> None:
@@ -98,7 +116,7 @@ def _process_window(runtime: BotRuntime, window: QQWindow) -> None:
 
 
 def _already_seen(runtime: BotRuntime, message: ChatMessage) -> bool:
-    key = message.raw_id or message.dedupe_key
+    key = f"{message.window_id}|{message.raw_id}" if message.raw_id else message.dedupe_key
     if key in runtime.seen_messages:
         return True
     runtime.seen_messages.add(key)
