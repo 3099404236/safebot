@@ -589,4 +589,5 @@ def _looks_like_qq_process(process_path: str) -> bool:
 
 
 def _window_id(title: str, class_name: str, hwnd: int | None = None) -> str:
-    return hashlib.sha1(f"{title}|{class_name}|{hwnd or ''}".encode("utf-8", errors="ignore")).hexdigest()[:12]
+    source = f"hwnd:{hwnd}" if hwnd else f"{title}|{class_name}"
+    return hashlib.sha1(source.encode("utf-8", errors="ignore")).hexdigest()[:12]

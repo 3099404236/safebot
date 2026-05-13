@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 
 from safebot.models import ChatMessage
-from safebot.ui.uia_adapter import _contains_rich_card, _control_strings_for_url_search
+from safebot.ui.uia_adapter import _contains_rich_card, _control_strings_for_url_search, _window_id
 
 
 class FakeValuePattern:
@@ -69,6 +69,16 @@ class UIAAdapterUrlExtractionTest(unittest.TestCase):
             source_control=FakeControl(),
         )
         self.assertIsNotNone(message.source_control)
+
+    def test_window_id_prefers_stable_hwnd(self):
+        self.assertEqual(
+            _window_id("old title", "Chrome_WidgetWin_1", 123),
+            _window_id("new title", "Chrome_WidgetWin_1", 123),
+        )
+        self.assertNotEqual(
+            _window_id("old title", "Chrome_WidgetWin_1", 123),
+            _window_id("old title", "Chrome_WidgetWin_1", 456),
+        )
 
 
 if __name__ == "__main__":
