@@ -12,3 +12,4 @@ config/accessibility_map.json
 config/whitelist.json
 qq-tree.txt
 qq-main-tree.txt
+qq-*-tree.txt

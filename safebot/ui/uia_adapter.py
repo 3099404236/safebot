@@ -136,7 +136,9 @@ class QQAutomation:
             raise RuntimeError(f"input box not found for window {window.title}")
 
         _set_focus(input_box)
-        if not _set_value(input_box, text):
+        _clear_text(self.auto)
+        if not _set_value(input_box, text) or text not in _value_pattern_text(input_box):
+            _clear_text(self.auto)
             _paste_text(self.auto, text)
 
         if send_mode == "button":
@@ -161,7 +163,7 @@ class QQAutomation:
             return current
         selector = slot.get("selector")
         if selector:
-            return _find_descendant(root, selector)
+            return _find_descendant(root, selector, max_depth=int(slot.get("max_depth", 15)))
         return None
 
     def _heuristic_message_list(self, root: Any) -> Any | None:
@@ -179,7 +181,7 @@ class QQAutomation:
         return candidates[0][1]
 
     def _find_first_by_type(self, root: Any, control_type: str) -> Any | None:
-        return _find_descendant(root, {"control_type": control_type})
+        return _find_descendant(root, {"control_type": control_type}, max_depth=15)
 
 
 def _load_uiautomation() -> Any:
@@ -379,10 +381,11 @@ def _set_focus(control: Any) -> None:
     try:
         control.SetFocus()
     except Exception:
-        try:
-            control.Click()
-        except Exception:
-            pass
+        pass
+    try:
+        control.Click()
+    except Exception:
+        pass
 
 
 def _set_value(control: Any, text: str) -> bool:
@@ -399,6 +402,10 @@ def _paste_text(auto: Any, text: str) -> None:
         auto.SendKeys(text, waitTime=0.01)
         return
     _send_keys(auto, "^v", "{Ctrl}v")
+
+
+def _clear_text(auto: Any) -> None:
+    _send_keys(auto, "^a{BACKSPACE}", "{Ctrl}a{Back}")
 
 
 def _send_keys(auto: Any, pywinauto_keys: str, uia_keys: str) -> None:
