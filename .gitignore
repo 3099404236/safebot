@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+logs/
+.env
+.env.*
+!.env.example
+config/settings.json
+config/accessibility_map.json
+config/whitelist.json
+qq-tree.txt
+qq-main-tree.txt

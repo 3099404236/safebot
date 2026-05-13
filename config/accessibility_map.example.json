@@ -1,0 +1,32 @@
+{
+  "_comment": "先运行 python -m safebot dump-tree --title 群名 --depth 8 --output tree.txt，再按实际 QQ 树结构填写下面路径。",
+  "message_list": {
+    "path": [
+      {
+        "control_type": "Pane",
+        "class_name_contains": "Chrome"
+      },
+      {
+        "control_type": "List",
+        "name_contains": "消息"
+      }
+    ]
+  },
+  "input_box": {
+    "selector": {
+      "control_type": "Edit"
+    }
+  },
+  "send_button": {
+    "selector": {
+      "control_type": "Button",
+      "name_contains": "发送"
+    }
+  },
+  "download_button": {
+    "selector": {
+      "control_type": "Button",
+      "name_contains": "下载"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "api": {
+    "virustotal_api_key": "",
+    "google_safe_browsing_api_key": "",
+    "virustotal_requests_per_minute": 4,
+    "submit_urls_to_virustotal": false,
+    "upload_files_to_virustotal": false
+  },
+  "bot": {
+    "poll_interval_seconds": 2.5,
+    "dry_run": true,
+    "send_mode": "enter",
+    "monitored_window_titles": [],
+    "window_title_keywords": [],
+    "window_class_keywords": ["Chrome", "Qt", "TXGui", "Electron"],
+    "whitelist_path": "config/whitelist.json",
+    "accessibility_map_path": "config/accessibility_map.json",
+    "max_file_size_mb": 50,
+    "qq_download_dir": "",
+    "delete_scanned_files_after_scan": false,
+    "log_file": "logs/safebot.log"
+  },
+  "rules": {
+    "request_timeout_seconds": 8.0,
+    "max_html_bytes": 1048576,
+    "new_domain_days": 30,
+    "brand_keywords": ["qq", "weixin", "wechat", "学校", "教务", "统一身份认证"]
+  }
+}
