@@ -16,7 +16,6 @@ from safebot.scanners.url_scanner import UrlScanner
 from safebot.scanners.virustotal import VirusTotalClient
 from safebot.settings import Settings
 from safebot.ui.uia_adapter import QQAutomation, QQWindow
-from safebot.url_utils import extract_urls
 from safebot.whitelist import Whitelist
 
 LOG = logging.getLogger(__name__)
@@ -115,7 +114,16 @@ def _handle_message(runtime: BotRuntime, window: QQWindow, message: ChatMessage)
             _send(runtime, window, command.reply)
         return
 
-    for url in extract_urls(message.content):
+    urls = runtime.automation.extract_urls_from_message(message)
+    if not urls and runtime.automation.message_contains_rich_card(message):
+        LOG.info(
+            "Rich card message has no exposed URL; cannot scan card target: group=%s sender=%s preview=%r",
+            window.title,
+            message.sender,
+            message.content[:120],
+        )
+
+    for url in urls:
         LOG.info("Scanning URL from %s/%s: %s", window.title, message.sender, url)
         result = runtime.url_scanner.scan(url)
         if result.suppressed:

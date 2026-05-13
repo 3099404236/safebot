@@ -137,3 +137,4 @@ python -m safebot run --config config/settings.json --send --yes
 - Safe Browsing 文档要求 `threatMatches.find` 最多一次查 500 个 URL，本项目按单 URL 查询。
 - 本地规则会用 `requests` 下载 HTML 但不执行 JavaScript。
 - UIAutomation 只能读到当前可见/已加载的消息，历史消息需要额外滚动逻辑。
+- QQ 富媒体卡片可能只在无障碍树里暴露标题、来源和卡片类型，不暴露原始 URL。代码会额外扫描控件属性中的 URL；如果卡片完全不暴露 URL，只能记录日志，无法对真实目标链接打分。

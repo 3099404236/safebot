@@ -110,6 +110,24 @@ class QQAutomation:
             )
         return messages
 
+    def extract_urls_from_message(self, message: ChatMessage) -> list[str]:
+        from safebot.url_utils import extract_urls
+
+        urls: list[str] = []
+        seen: set[str] = set()
+        candidates = [message.content]
+        if message.source_control is not None:
+            candidates.extend(_control_strings_for_url_search(message.source_control))
+        for candidate in candidates:
+            for url in extract_urls(candidate):
+                if url not in seen:
+                    seen.add(url)
+                    urls.append(url)
+        return urls
+
+    def message_contains_rich_card(self, message: ChatMessage) -> bool:
+        return bool(message.source_control is not None and _contains_rich_card(message.source_control))
+
     def click_download_for_message(self, message: ChatMessage) -> bool:
         if message.source_control is None:
             return False
@@ -375,6 +393,59 @@ def _strip_message_metadata(texts: list[str], sender: str) -> list[str]:
 
 def _is_time_label(text: str) -> bool:
     return bool(re.fullmatch(r"\d{1,2}:\d{2}", text.strip()))
+
+
+def _control_strings_for_url_search(control: Any) -> list[str]:
+    values: list[str] = []
+    for item in _walk(control, max_depth=18):
+        for prop in (
+            "Name",
+            "AutomationId",
+            "HelpText",
+            "AccessKey",
+            "AcceleratorKey",
+            "AriaProperties",
+            "AriaRole",
+            "ItemStatus",
+            "ItemType",
+        ):
+            value = _attr(item, prop).strip()
+            if value:
+                values.append(value)
+        value = _value_pattern_text(item).strip()
+        if value:
+            values.append(value)
+        values.extend(_legacy_accessible_strings(item))
+    return values
+
+
+def _legacy_accessible_strings(control: Any) -> list[str]:
+    try:
+        pattern = control.GetLegacyIAccessiblePattern()
+    except Exception:
+        return []
+    values: list[str] = []
+    for prop in ("Name", "Value", "Description"):
+        try:
+            value = str(getattr(pattern, prop) or "").strip()
+        except Exception:
+            value = ""
+        if value:
+            values.append(value)
+    return values
+
+
+def _contains_rich_card(control: Any) -> bool:
+    for item in _walk(control, max_depth=18):
+        name = _attr(item, "Name")
+        automation_id = _attr(item, "AutomationId")
+        if name == "\u5361\u7247":
+            return True
+        if "ark-msg-content-container" in automation_id:
+            return True
+        if automation_id.startswith("com_tencent_tuwen"):
+            return True
+    return False
 
 
 def _set_focus(control: Any) -> None:
